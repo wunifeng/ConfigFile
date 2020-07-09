@@ -1,0 +1,9 @@
+proxies:
+  - {name: "[Trojan] jp69.huashaobei.com:443", server: jp69.huashaobei.com, port: 443, type: trojan, password: fXZWZP, sni: jp69.huashaobei.com}
+  - {name: "[Trojan] club.huashaobei.com:443", server: club.huashaobei.com, port: 443, type: trojan, password: fXZWZP, sni: club.huashaobei.com}
+  - {name: "[Trojan] pikaqiu.win:443", server: pikaqiu.win, port: 443, type: trojan, password: fXZWZP, sni: pikaqiu.win}
+  - {name: "[Trojan] jp692.huashaobei.com:443", server: jp692.huashaobei.com, port: 443, type: trojan, password: fXZWZP, sni: jp692.huashaobei.com}
+  - {name: "[Trojan] 1.huashaobei.com:443", server: 1.huashaobei.com, port: 443, type: trojan, password: fXZWZP, sni: 1.huashaobei.com}
+  - {name: "[VMess] 🇺🇲 X美国费列罗节点 tkvpn.github.io", server: static.huashaobei.com, port: 443, type: vmess, uuid: 86bdabdf-0a0f-fc68-ae6d-d767f52ea63d, alterId: 2, cipher: auto, tls: true, network: ws, ws-path: /tkvpn.github.io, ws-headers: {Host: static.huashaobei.com}}
+  - {name: "[Trojan] www.pikaqiu.win:443", server: www.pikaqiu.win, port: 443, type: trojan, password: fXZWZP, sni: www.pikaqiu.win}
+  - {name: "[Trojan] wiki.pikaqiu.win:443", server: wiki.pikaqiu.win, port: 443, type: trojan, password: fXZWZP, sni: wiki.pikaqiu.win}
