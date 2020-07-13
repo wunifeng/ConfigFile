@@ -1,5 +1,9 @@
 # Clash rule doc: https://lancellc.gitbook.io/clash/clash-config-file/general
 
+#配置思路：
+#代理服务器分两大类：一、自建付费节点（包含暂时免费，将来付费）二、从各种渠道得到的免费节点
+#使用代理的情况分两类：一、在国外，翻回国看视频。二、在国内，翻出墙外。
+
 port: 7890
 # port of HTTP
 socks-port: 7891
@@ -14,13 +18,13 @@ redir-port: 7892
 
 # Set to true to allow connections to local-end server from
 # other LAN IP addresses
-allow-lan: true
+#allow-lan: true
 
 # This is only applicable when `allow-lan` is `true`
 # '*': bind all IP addresses
 # 192.168.122.11: bind a single IPv4 address
 # "[aaaa::a8aa:ff:fe09:57d8]": bind a single IPv6 address
-bind-address: '*'
+#bind-address: '*'
 
 # Clash router working mode
 # rule: rule-based packet routing
@@ -28,14 +32,14 @@ bind-address: '*'
 # direct: directly forward the packets to the Internet
 mode: rule
 
-log-level: error
+log-level: debug
 # silent / error / warning / info / debug
 
 # When set to false, resolver won't translate hostnames to IPv6 addresses
 ipv6: true
 
 # RESTful web API listening address
-external-controller: 127.0.0.1:9090
+#external-controller: 127.0.0.1:9090
 
 # A relative path to the configuration directory or an absolute path to a
 # directory in which you put some static web resource. Clash core will then
@@ -48,7 +52,7 @@ external-controller: 127.0.0.1:9090
 # secret: ""
 
 # Outbound interface name
-interface-name: en0
+#interface-name: en0
 
 # Static hosts for DNS server and connection establishment, only works
 # when `dns.enhanced-mode` is `redir-host`.
@@ -57,7 +61,6 @@ interface-name: en0
 # Non-wildcard domain names has a higher priority than wildcard domain names
 # e.g. foo.example.com > *.example.com > .example.com
 # P.S. +.foo.com equals to .foo.com and foo.com
-
 hosts:
   'mtalk.google.com': 108.177.125.188
   # '*.clash.dev': 127.0.0.1
@@ -90,26 +93,28 @@ dns:
 
   default-nameserver:               # resolve dns nameserver host, should fill pure IP
                                     # aka Bootstrap DNS
-    
+    - 1.1.1.1
     - 114.114.114.114
-    - 223.5.5.5
-    - 8.8.4.4
+    - 8.8.8.8
 
-  enhanced-mode: redir-host     # or fake-ip
-
+  enhanced-mode: fake-ip     # redir-host or fake-ip
 
   nameserver:
-    - https://dns.adguard.com/dns-query
-    - 1.1.1.1
-    - 176.103.130.130
-    - 176.103.130.131
+#    - https://dns.adguard.com/dns-query
+#    - 1.1.1.1
+#    - 176.103.130.130
+#    - 176.103.130.131
     - 114.114.114.114
-    - tls://dns.rubyfish.cn:853  # dns over tls
-    - https://1.1.1.1/dns-query  # dns over https
+    - 223.5.5.5
+#    - https://1.1.1.1/dns-query  # dns over https
 
   # https://kb.adguard.com/en/general/dns-providers
   fallback:
     - 1.1.1.1
+    - 8.8.8.8
+    - 8.8.4.4
+    - 176.103.130.130       #AdGuard DNS
+    - 176.103.130.131       #AdGuard DNS
     - tls://1.1.1.1:853
     - tls://dns.quad9.net:853
     - tls://dns.google:853
@@ -124,19 +129,18 @@ dns:
 # Clash 4 win 的专有配置
 # https://docs.cfw.lbyczf.com/contents/breakconn.html
 cfw-conn-break-strategy:
-  proxy: all              # none/chain/all
-  profile: true           # true/false
-  mode: true              # true/false
-
+    proxy: none              # none/chain/all
+    profile: true           # true/false
+    mode: true              # true/false
 
 #绕过系统代理
 #部分应用检测到系统代理会拒绝响应（例如网易云音乐uwp），此功能用于解决此类问题
 cfw-bypass:
-#  - 'music.163.com' # 网易云域名1
-#  - '*.music.126.net' # 网易云域名2
+    - 'music.163.com' # 网易云域名1
+    - '*.music.126.net' # 网易云域名2
 
+#本地服务器配置
 proxies:
-
     -   name: "回国SS"
         type: ss
         server: wunifeng.f3322.net
@@ -174,7 +178,7 @@ proxies:
         # ws-headers:
         Host: www.dashui8.com
 
-    -   name: "UFO香港Trojan"
+    -   name: "UFO-1-Trojan"
         type: trojan
         server: www.zucaipro.ga
         port: 443
@@ -185,6 +189,12 @@ proxies:
         #   - h2
         #   - http/1.1
         # skip-cert-verify: true
+        
+    -   name: "UFO-2-Trojan"
+        type: trojan
+        server: gl2.zucaipro.ga
+        port: 443
+        password: mytrojan001
 
     -   name: "谷歌云香港Trojan"
         type: trojan
@@ -194,613 +204,208 @@ proxies:
 
     -   name: "阿里云香港Trojan"
         type: trojan
-        server: www.zucaipro.ml
+        server: zucaipro.ml
         port: 443
         password: mytrojan001
 
+proxy-providers:
+    糖客节点:
+        type: http
+        url: "https://raw.githubusercontent.com/wunifeng/ConfigFile/master/Clash/testproxies.yaml"
+        interval: 3600
+        path: ./remoteProxyConfig.yaml
+        health-check:
+            enable: true
+            interval: 600
+            url: http://www.gstatic.com/generate_204
+
 proxy-groups:
-    -   name: 兵工厂节点
+    -   name: 广告
         type: select
         proxies:
-            - 推荐国外组
-            - 手选香港组
-            - 国外最快组
+            - REJECT
+            - DIRECT
+            
+#    -   name: 苹果服务
+#        type: select
+#        proxies:
+#            - Proxy
+#            - DIRECT
 
-    -   name: 国内组
+    -   name: "中国流媒体"
+        type: select
+        proxies:
+            - DIRECT
+            - 国内节点组
+            
+    -   name: "中国网站"
+        type: select
+        proxies:
+            - DIRECT
+            - 国内节点组
+            
+#    -   name: "谷歌媒体"
+#        type: select
+#        proxies:
+#            - Proxy
+#            - DIRECT
+            
+#这里的国外网站已经包含国外流媒体
+    -   name: "国外网站"
+        type: select
+        proxies:
+            - Proxy
+            - DIRECT
+
+#把奈飞单独列出来，测试之后从已有服务器里选择一个可以使用奈飞的服务器
+#奈飞暂时使用香港节点里最快的一个，因为目前还么有奈飞账号
+#等到需要奈飞账号的时候，需要修改此项
+    -   name: "Netflix"
+        type: select
+        proxies:
+            - 香港节点
+            - DIRECT
+
+#这个代理是指国外代理（人在国内时访问国外网站使用的代理）
+#选择策略有两个，如果自费服务器流量用完，就选择免费服务器
+#兵工厂节点是所有节点里最快的一个
+#外来节点是所有免费节点里最快的一个
+#自建节点筛选是自建自费节点里最快的一个
+    -   name: Proxy
+        type: select
+        proxies:
+            - DIRECT
+            - 兵工厂节点
+            - 轮询节点
+            - 外来节点
+            - 自建节点筛选
+
+    -   name: 国内节点组
         type: select
         proxies:
             - "回国SS"
+            - DIRECT
 
-    -   name: 手选香港组
-        type: select
+#指定香港节点，应对可能的奈飞解锁
+    -   name: 香港节点
+        type: url-test
+        url: 'http://www.gstatic.com/generate_204'
+        interval: 900
         proxies:
             - "腾讯云香港V2Ray"
-
-            - "UFO香港Trojan"
-
+            - "UFO-1-Trojan"
+            - "UFO-2-Trojan"
             - "谷歌云香港Trojan"
-
             - "阿里云香港Trojan"
 
-    -   name: 推荐国外组
+#外来节点和自建节点选择最快的一个
+    -   name: 兵工厂节点
+        type: url-test
+        url: 'http://www.gstatic.com/generate_204'
+        interval: 900
+        proxies:
+            - 自建节点筛选
+            - 外来节点
+
+
+#所有节点进行轮询，这个配置主要用在路由器上
+#目的是，不需要频繁登录路由器设置，可能会牺牲速度
+    -   name: 轮询节点
         type: fallback
         url: 'http://www.gstatic.com/generate_204'
         interval: 900
         proxies:
+            - "UFO-1-Trojan"
             - "Vultr悉尼V2Ray"
-
-            - "腾讯云香港V2Ray"
-
-            - "UFO香港Trojan"
-
-            - "谷歌云香港Trojan"
-
             - "阿里云香港Trojan"
+            - "腾讯云香港V2Ray"
+            - "谷歌云香港Trojan"
+            - "UFO-2-Trojan"
+            - 外来节点
 
-    -   name: 国外最快组
+#自建节点里选择最快的一个
+    -   name: 自建节点筛选
         type: url-test
         url: 'http://www.gstatic.com/generate_204'
         interval: 900
         proxies:
             - "Vultr悉尼V2Ray"
-
             - "腾讯云香港V2Ray"
-
-            - "UFO香港Trojan"
-
+            - "UFO-1-Trojan"
+            - "UFO-2-Trojan"
             - "谷歌云香港Trojan"
-
             - "阿里云香港Trojan"
 
+#外部收到的节点，因为不需要付费，如果速度快就用，速度慢就不需要用，
+#所以只选最快的一个与自建节点比较
+    -   name: 外来节点
+        type: url-test
+        url: 'http://www.gstatic.com/generate_204'
+        interval: 900
+        use:
+            - 糖客节点
+
+rule-providers:
+# name: # Provider 名称
+#   type: http # http 或 file
+#   behavior: classical # 或 ipcidr、domain
+#   path: # 文件路径
+#   url: # 只有当类型为 HTTP 时才可用，您不需要在本地空间中创建新文件。
+#   interval: # 自动更新间隔，仅在类型为 HTTP 时可用
+
+    Unbreak:
+        type: http
+        behavior: classical
+        path: ./RuleSet/Unbreak.yaml
+        url: https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/Unbreak.yaml
+        interval: 86400
+    
+    Netflix:
+        type: http
+        behavior: classical
+        path: ./RuleSet/Netflix/Netflix.yaml
+        url: https://raw.githubusercontent.com/wunifeng/ConfigFile/master/Clash/Netflix.yaml
+        interval: 86400
+
+    国际流媒体:
+        type: http
+        behavior: classical
+        path: ./RuleSet/StreamingMedia/Streaming.yaml
+        url: https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/StreamingMedia/Streaming.yaml
+        interval: 86400
+
+    中国流媒体:
+        type: http
+        behavior: classical
+        path: ./RuleSet/StreamingMedia/StreamingSE.yaml
+        url: https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/StreamingMedia/StreamingSE.yaml
+        interval: 86400
+
+    国外网站:
+        type: http
+        behavior: classical
+        path: ./RuleSet/Global.yaml
+        url: https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/Global.yaml
+        interval: 86400
+
+    国内网站:
+        type: http
+        behavior: classical
+        path: ./RuleSet/China.yaml
+        url: https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/China.yaml
+        interval: 86400
+
+    国内IP:
+        type: http
+        behavior: ipcidr
+        path: ./RuleSet/Extra/ChinaIP.yaml
+        url: https://raw.githubusercontent.com/DivineEngine/Profiles/master/Clash/RuleSet/Extra/ChinaIP.yaml
+        interval: 86400
+
+
 rules:
-    - DOMAIN-SUFFIX,xvideos.com,Vultr悉尼V2Ray
-
-    # Apple
-    - DOMAIN,safebrowsing.urlsec.qq.com,DIRECT # 如果您并不信任此服务提供商或防止其下载消耗过多带宽资源，可以进入 Safari 设置，关闭 Fraudulent Website Warning 功能，并使用 REJECT 策略。
-    - DOMAIN,safebrowsing.googleapis.com,DIRECT # 如果您并不信任此服务提供商或防止其下载消耗过多带宽资源，可以进入 Safari 设置，关闭 Fraudulent Website Warning 功能，并使用 REJECT 策略。
-    - DOMAIN,ocsp.apple.com,手选香港组
-    - DOMAIN-SUFFIX,digicert.com,DIRECT
-    - DOMAIN-SUFFIX,entrust.net,DIRECT
-    - DOMAIN,ocsp.verisign.net,DIRECT
-    - DOMAIN-SUFFIX,apps.apple.com,手选香港组
-    - DOMAIN,itunes.apple.com,手选香港组
-    - DOMAIN-SUFFIX,blobstore.apple.com,手选香港组
-    - DOMAIN-SUFFIX,music.apple.com,DIRECT
-    - DOMAIN-SUFFIX,mzstatic.com,DIRECT
-    - DOMAIN-SUFFIX,itunes.apple.com,DIRECT
-    - DOMAIN-SUFFIX,icloud.com,DIRECT
-    - DOMAIN-SUFFIX,icloud-content.com,DIRECT
-    - DOMAIN-SUFFIX,me.com,DIRECT
-    - DOMAIN-SUFFIX,mzstatic.com,DIRECT
-    - DOMAIN-SUFFIX,akadns.net,DIRECT
-    - DOMAIN-SUFFIX,aaplimg.com,DIRECT
-    - DOMAIN-SUFFIX,cdn-apple.com,DIRECT
-    - DOMAIN-SUFFIX,apple.com,DIRECT
-    - DOMAIN-SUFFIX,apple-cloudkit.com,DIRECT
-    # - DOMAIN,e.crashlytics.com,REJECT //注释此选项有助于大多数App开发者分析崩溃信息；如果您拒绝一切崩溃数据统计、搜集，请取消 # 注释。
-
-
-
-    # 国内网站
-
-    # 绕过代理 - 北美视频网站
-    - DOMAIN-SUFFIX,primevideo.com,DIRECT
-    - DOMAIN-SUFFIX,netflix.com,DIRECT
-    # 国内二级域名
-    - DOMAIN-SUFFIX,edu.cn,回国SS
-    - DOMAIN-SUFFIX,gov.cn,回国SS
-    # AcFun
-    - DOMAIN-SUFFIX,acfun.cn,回国SS
-    - DOMAIN-SUFFIX,acfun.com,回国SS
-    - DOMAIN-SUFFIX,aixifan.com,回国SS
-    # 网易
-    - DOMAIN-SUFFIX,163.com,回国SS
-    - DOMAIN-SUFFIX,126.com,回国SS
-    - DOMAIN-SUFFIX,127.net,回国SS
-    - DOMAIN-SUFFIX,netease.com,回国SS
-    - DOMAIN-SUFFIX,163yun.com,回国SS
-    - DOMAIN-SUFFIX,126.net,回国SS
-    # 腾讯
-    - DOMAIN-SUFFIX,qq.com,回国SS
-    - DOMAIN-SUFFIX,soso.com,回国SS
-    - DOMAIN-SUFFIX,qpic.cn,回国SS
-    - DOMAIN-SUFFIX,gtimg.cn,回国SS
-    - DOMAIN-SUFFIX,weixin.com,回国SS
-    - DOMAIN-SUFFIX,qlogo.cn,回国SS
-    - IP-CIDR,203.205.192.0/18,回国SS
-    # 新浪
-    - DOMAIN-SUFFIX,weibo.com,回国SS
-    - DOMAIN-SUFFIX,sinajs.cn,回国SS
-    - DOMAIN-SUFFIX,sina.com,回国SS
-    - DOMAIN-SUFFIX,sina.cn,回国SS
-    - DOMAIN-SUFFIX,sina.com.cn,回国SS
-    - DOMAIN-SUFFIX,sinaimg.cn,回国SS
-    - DOMAIN-SUFFIX,sinajs.cn,回国SS
-    - DOMAIN-SUFFIX,miaopai.com,回国SS
-    - DOMAIN-SUFFIX,xiaoka.tv,回国SS
-    - DOMAIN-SUFFIX,t.cn,回国SS
-    # 阿里
-    - DOMAIN-SUFFIX,aliyun.com,回国SS
-    - DOMAIN-SUFFIX,taobao.com,回国SS
-    - DOMAIN-SUFFIX,alicdn.com,回国SS
-    - DOMAIN-SUFFIX,tmall.com,回国SS
-    - DOMAIN-SUFFIX,mmstat.com,回国SS
-    - DOMAIN-SUFFIX,tbcdn.com,回国SS
-    - DOMAIN-SUFFIX,alibabacloud.com,回国SS
-    - DOMAIN-SUFFIX,alipay.com,回国SS
-    - DOMAIN-SUFFIX,hichina.com,回国SS
-    - DOMAIN-SUFFIX,xiami.com,回国SS
-    - DOMAIN-SUFFIX,xiami.net,回国SS
-    # 百度
-    - DOMAIN-SUFFIX,baidu.com,回国SS
-    - DOMAIN-SUFFIX,bdstatic.com,回国SS
-    - DOMAIN-SUFFIX,bcebos.com,回国SS
-    - DOMAIN-SUFFIX,baidupcs.com,回国SS
-    - DOMAIN-SUFFIX,qianqian.com,回国SS
-    # Bilibili
-    - DOMAIN-SUFFIX,hdslb.com,回国SS
-    - DOMAIN-SUFFIX,bilibili.com,回国SS
-    - DOMAIN-SUFFIX,geetest.com,回国SS
-    - DOMAIN-SUFFIX,acgvideo.com,回国SS
-    - DOMAIN-SUFFIX,bilivideo.com,回国SS
-    # 湖南TV
-    - DOMAIN-SUFFIX,hitv.com,回国SS
-    - DOMAIN-SUFFIX,hunantv.com,回国SS
-    - DOMAIN-SUFFIX,mgtv.com,回国SS
-    # Migu
-    - DOMAIN-SUFFIX,cmvideo.cn,回国SS
-    - DOMAIN-SUFFIX,migu.cn,回国SS
-    - DOMAIN-SUFFIX,miguvideo.com,回国SS
-    # 优酷
-    - DOMAIN-SUFFIX,soku.com,回国SS
-    - DOMAIN-SUFFIX,youku.com,回国SS
-    - DOMAIN-SUFFIX,ykimg.com,回国SS
-    # 爱奇艺
-    - DOMAIN-SUFFIX,iqiyi.com,回国SS
-    - DOMAIN-SUFFIX,iqiyipic.com,回国SS
-    - DOMAIN-SUFFIX,qy.net,回国SS
-    # 搜狐
-    - DOMAIN-SUFFIX,sohu.com,回国SS
-    - DOMAIN-SUFFIX,sohu.com.cn,回国SS
-    - DOMAIN-SUFFIX,itc.cn,回国SS
-    - DOMAIN-SUFFIX,v-56.com,回国SS
-    # Kugou, Kuwo
-    - DOMAIN-SUFFIX,kugou.com,回国SS
-    - DOMAIN-SUFFIX,kuwo.cn,回国SS
-    - DOMAIN-SUFFIX,koowo.com,回国SS
-    # 知乎
-    - DOMAIN-SUFFIX,zhihu.com,回国SS
-    - DOMAIN-SUFFIX,zhimg.com,回国SS
-    # 秀米
-    - DOMAIN-SUFFIX,xiumi.us,回国SS
-    # 豆瓣
-    - DOMAIN-SUFFIX,douban.com,回国SS
-    - DOMAIN-SUFFIX,doubanio.com,回国SS
-    # 天眼查
-    - DOMAIN-SUFFIX,tianyancha.com,回国SS
-    # IP地址测试
-    - DOMAIN-SUFFIX,ip138.com,回国SS
-
-    - DOMAIN-SUFFIX,cn,回国SS
-    - DOMAIN-SUFFIX,126.com,回国SS
-    - DOMAIN-SUFFIX,126.net,回国SS
-    - DOMAIN-SUFFIX,127.net,回国SS
-    - DOMAIN-SUFFIX,163.com,回国SS
-    - DOMAIN-SUFFIX,360buyimg.com,回国SS
-    - DOMAIN-SUFFIX,36kr.com,回国SS
-    - DOMAIN-SUFFIX,acfun.tv,回国SS
-    - DOMAIN-SUFFIX,air-matters.com,回国SS
-    - DOMAIN-SUFFIX,aixifan.com,回国SS
-    - DOMAIN-SUFFIX,akamaized.net,回国SS
-    - DOMAIN-KEYWORD,alicdn,回国SS
-    - DOMAIN-KEYWORD,alipay,回国SS
-    - DOMAIN-KEYWORD,taobao,回国SS
-    - DOMAIN-SUFFIX,amap.com,回国SS
-    - DOMAIN-SUFFIX,autonavi.com,回国SS
-    - DOMAIN-KEYWORD,baidu,回国SS
-    - DOMAIN-SUFFIX,bdimg.com,回国SS
-    - DOMAIN-SUFFIX,bdstatic.com,回国SS
-    - DOMAIN-SUFFIX,bilibili.com,回国SS
-    - DOMAIN-SUFFIX,bilivideo.com,回国SS
-    - DOMAIN-SUFFIX,caiyunapp.com,回国SS
-    - DOMAIN-SUFFIX,clouddn.com,回国SS
-    - DOMAIN-SUFFIX,cnbeta.com,回国SS
-    - DOMAIN-SUFFIX,cnbetacdn.com,回国SS
-    - DOMAIN-SUFFIX,cootekservice.com,回国SS
-    - DOMAIN-SUFFIX,csdn.net,回国SS
-    - DOMAIN-SUFFIX,ctrip.com,回国SS
-    - DOMAIN-SUFFIX,dgtle.com,回国SS
-    - DOMAIN-SUFFIX,dianping.com,回国SS
-    - DOMAIN-SUFFIX,douban.com,回国SS
-    - DOMAIN-SUFFIX,doubanio.com,回国SS
-    - DOMAIN-SUFFIX,duokan.com,回国SS
-    - DOMAIN-SUFFIX,easou.com,回国SS
-    - DOMAIN-SUFFIX,ele.me,回国SS
-    - DOMAIN-SUFFIX,feng.com,回国SS
-    - DOMAIN-SUFFIX,fir.im,回国SS
-    - DOMAIN-SUFFIX,frdic.com,回国SS
-    - DOMAIN-SUFFIX,g-cores.com,回国SS
-    - DOMAIN-SUFFIX,godic.net,回国SS
-    - DOMAIN-SUFFIX,gtimg.com,回国SS
-    - DOMAIN,cdn.hockeyapp.net,回国SS
-    - DOMAIN-SUFFIX,hongxiu.com,回国SS
-    - DOMAIN-SUFFIX,hxcdn.net,回国SS
-    - DOMAIN-SUFFIX,iciba.com,回国SS
-    - DOMAIN-SUFFIX,ifeng.com,回国SS
-    - DOMAIN-SUFFIX,ifengimg.com,回国SS
-    - DOMAIN-SUFFIX,ipip.net,回国SS
-    - DOMAIN-SUFFIX,iqiyi.com,回国SS
-    - DOMAIN-SUFFIX,jd.com,回国SS
-    - DOMAIN-SUFFIX,jianshu.com,回国SS
-    - DOMAIN-SUFFIX,knewone.com,回国SS
-    - DOMAIN-SUFFIX,le.com,回国SS
-    - DOMAIN-SUFFIX,lecloud.com,回国SS
-    - DOMAIN-SUFFIX,lemicp.com,回国SS
-    - DOMAIN-SUFFIX,licdn.com,回国SS
-    - DOMAIN-SUFFIX,linkedin.com,回国SS
-    - DOMAIN-SUFFIX,luoo.net,回国SS
-    - DOMAIN-SUFFIX,meituan.com,回国SS
-    - DOMAIN-SUFFIX,meituan.net,回国SS
-    - DOMAIN-SUFFIX,mi.com,回国SS
-    - DOMAIN-SUFFIX,miaopai.com,回国SS
-    - DOMAIN-SUFFIX,microsoft.com,回国SS
-    - DOMAIN-SUFFIX,microsoftonline.com,回国SS
-    - DOMAIN-SUFFIX,miui.com,回国SS
-    - DOMAIN-SUFFIX,miwifi.com,回国SS
-    - DOMAIN-SUFFIX,mob.com,回国SS
-    - DOMAIN-SUFFIX,netease.com,回国SS
-    - DOMAIN-SUFFIX,office.com,回国SS
-    - DOMAIN-SUFFIX,office365.com,回国SS
-    - DOMAIN-KEYWORD,officecdn,回国SS
-    - DOMAIN-SUFFIX,oschina.net,回国SS
-    - DOMAIN-SUFFIX,ppsimg.com,回国SS
-    - DOMAIN-SUFFIX,pstatp.com,回国SS
-    - DOMAIN-SUFFIX,qcloud.com,回国SS
-    - DOMAIN-SUFFIX,qdaily.com,回国SS
-    - DOMAIN-SUFFIX,qdmm.com,回国SS
-    - DOMAIN-SUFFIX,qhimg.com,回国SS
-    - DOMAIN-SUFFIX,qhres.com,回国SS
-    - DOMAIN-SUFFIX,qidian.com,回国SS
-    - DOMAIN-SUFFIX,qihucdn.com,回国SS
-    - DOMAIN-SUFFIX,qiniu.com,回国SS
-    - DOMAIN-SUFFIX,qiniucdn.com,回国SS
-    - DOMAIN-SUFFIX,qiyipic.com,回国SS
-    - DOMAIN-SUFFIX,qq.com,回国SS
-    - DOMAIN-SUFFIX,qqurl.com,回国SS
-    - DOMAIN-SUFFIX,rarbg.to,回国SS
-    - DOMAIN-SUFFIX,ruguoapp.com,回国SS
-    - DOMAIN-SUFFIX,segmentfault.com,回国SS
-    - DOMAIN-SUFFIX,sinaapp.com,回国SS
-    - DOMAIN-SUFFIX,smzdm.com,回国SS
-    - DOMAIN-SUFFIX,snapdrop.net,回国SS
-    - DOMAIN-SUFFIX,sogou.com,回国SS
-    - DOMAIN-SUFFIX,sogoucdn.com,回国SS
-    - DOMAIN-SUFFIX,sohu.com,回国SS
-    - DOMAIN-SUFFIX,soku.com,回国SS
-    - DOMAIN-SUFFIX,speedtest.net,回国SS
-    - DOMAIN-SUFFIX,sspai.com,回国SS
-    - DOMAIN-SUFFIX,suning.com,回国SS
-    - DOMAIN-SUFFIX,taobao.com,回国SS
-    - DOMAIN-SUFFIX,tencent.com,回国SS
-    - DOMAIN-SUFFIX,tenpay.com,回国SS
-    - DOMAIN-SUFFIX,tianyancha.com,回国SS
-    - DOMAIN-SUFFIX,tmall.com,回国SS
-    - DOMAIN-SUFFIX,tudou.com,回国SS
-    - DOMAIN-SUFFIX,umetrip.com,回国SS
-    - DOMAIN-SUFFIX,upaiyun.com,回国SS
-    - DOMAIN-SUFFIX,upyun.com,回国SS
-    - DOMAIN-SUFFIX,veryzhun.com,回国SS
-    - DOMAIN-SUFFIX,weather.com,回国SS
-    - DOMAIN-SUFFIX,weibo.com,回国SS
-    - DOMAIN-SUFFIX,xiami.com,回国SS
-    - DOMAIN-SUFFIX,xiami.net,回国SS
-    - DOMAIN-SUFFIX,xiaomicp.com,回国SS
-    - DOMAIN-SUFFIX,ximalaya.com,回国SS
-    - DOMAIN-SUFFIX,xmcdn.com,回国SS
-    - DOMAIN-SUFFIX,xunlei.com,回国SS
-    - DOMAIN-SUFFIX,yhd.com,回国SS
-    - DOMAIN-SUFFIX,yihaodianimg.com,回国SS
-    - DOMAIN-SUFFIX,yinxiang.com,回国SS
-    - DOMAIN-SUFFIX,ykimg.com,回国SS
-    - DOMAIN-SUFFIX,youdao.com,回国SS
-    - DOMAIN-SUFFIX,youku.com,回国SS
-    - DOMAIN-SUFFIX,zealer.com,回国SS
-    - DOMAIN-SUFFIX,zhihu.com,回国SS
-    - DOMAIN-SUFFIX,zhimg.com,回国SS
-    - DOMAIN-SUFFIX,zimuzu.tv,回国SS
-    - DOMAIN-SUFFIX,zoho.com,回国SS
-
-    # 抗 DNS 污染
-    - DOMAIN-KEYWORD,amazon,DIRECT
-    - DOMAIN-KEYWORD,google,DIRECT
-    - DOMAIN-KEYWORD,gmail,DIRECT
-    - DOMAIN-KEYWORD,youtube,DIRECT
-    - DOMAIN-KEYWORD,facebook,DIRECT
-    - DOMAIN-SUFFIX,fb.me,DIRECT
-    - DOMAIN-SUFFIX,fbcdn.net,DIRECT
-    - DOMAIN-KEYWORD,twitter,DIRECT
-    - DOMAIN-KEYWORD,instagram,DIRECT
-    - DOMAIN-KEYWORD,dropbox,DIRECT
-    - DOMAIN-SUFFIX,twimg.com,DIRECT
-    - DOMAIN-KEYWORD,blogspot,DIRECT
-    - DOMAIN-SUFFIX,youtu.be,DIRECT
-    - DOMAIN-KEYWORD,whatsapp,DIRECT
-
-    # 常见广告域名屏蔽
-    - DOMAIN-SUFFIX,mmstat.com,REJECT
-
-    # 国外网站
-    - DOMAIN-SUFFIX,9to5mac.com,DIRECT
-    - DOMAIN-SUFFIX,abpchina.org,DIRECT
-    - DOMAIN-SUFFIX,adblockplus.org,DIRECT
-    - DOMAIN-SUFFIX,adobe.com,DIRECT
-    - DOMAIN-SUFFIX,alfredapp.com,DIRECT
-    - DOMAIN-SUFFIX,amplitude.com,DIRECT
-    - DOMAIN-SUFFIX,ampproject.org,DIRECT
-    - DOMAIN-SUFFIX,android.com,DIRECT
-    - DOMAIN-SUFFIX,angularjs.org,DIRECT
-    - DOMAIN-SUFFIX,aolcdn.com,DIRECT
-    - DOMAIN-SUFFIX,apkpure.com,DIRECT
-    - DOMAIN-SUFFIX,appledaily.com,DIRECT
-    - DOMAIN-SUFFIX,appshopper.com,DIRECT
-    - DOMAIN-SUFFIX,appspot.com,DIRECT
-    - DOMAIN-SUFFIX,arcgis.com,DIRECT
-    - DOMAIN-SUFFIX,archive.org,DIRECT
-    - DOMAIN-SUFFIX,armorgames.com,DIRECT
-    - DOMAIN-SUFFIX,aspnetcdn.com,DIRECT
-    - DOMAIN-SUFFIX,att.com,DIRECT
-    - DOMAIN-SUFFIX,awsstatic.com,DIRECT
-    - DOMAIN-SUFFIX,azureedge.net,DIRECT
-    - DOMAIN-SUFFIX,azurewebsites.net,DIRECT
-    - DOMAIN-SUFFIX,bing.com,DIRECT
-    - DOMAIN-SUFFIX,bintray.com,DIRECT
-    - DOMAIN-SUFFIX,bit.com,DIRECT
-    - DOMAIN-SUFFIX,bit.ly,DIRECT
-    - DOMAIN-SUFFIX,bitbucket.org,DIRECT
-    - DOMAIN-SUFFIX,bjango.com,DIRECT
-    - DOMAIN-SUFFIX,bkrtx.com,DIRECT
-    - DOMAIN-SUFFIX,blog.com,DIRECT
-    - DOMAIN-SUFFIX,blogcdn.com,DIRECT
-    - DOMAIN-SUFFIX,blogger.com,DIRECT
-    - DOMAIN-SUFFIX,blogsmithmedia.com,DIRECT
-    - DOMAIN-SUFFIX,blogspot.com,DIRECT
-    - DOMAIN-SUFFIX,blogspot.hk,DIRECT
-    - DOMAIN-SUFFIX,bloomberg.com,DIRECT
-    - DOMAIN-SUFFIX,box.com,DIRECT
-    - DOMAIN-SUFFIX,box.net,DIRECT
-    - DOMAIN-SUFFIX,cachefly.net,DIRECT
-    - DOMAIN-SUFFIX,chromium.org,DIRECT
-    - DOMAIN-SUFFIX,cl.ly,DIRECT
-    - DOMAIN-SUFFIX,cloudflare.com,DIRECT
-    - DOMAIN-SUFFIX,cloudfront.net,DIRECT
-    - DOMAIN-SUFFIX,cloudmagic.com,DIRECT
-    - DOMAIN-SUFFIX,cmail19.com,DIRECT
-    - DOMAIN-SUFFIX,cnet.com,DIRECT
-    - DOMAIN-SUFFIX,cocoapods.org,DIRECT
-    - DOMAIN-SUFFIX,comodoca.com,DIRECT
-    - DOMAIN-SUFFIX,crashlytics.com,DIRECT
-    - DOMAIN-SUFFIX,culturedcode.com,DIRECT
-    - DOMAIN-SUFFIX,d.pr,DIRECT
-    - DOMAIN-SUFFIX,danilo.to,DIRECT
-    - DOMAIN-SUFFIX,dayone.me,DIRECT
-    - DOMAIN-SUFFIX,db.tt,DIRECT
-    - DOMAIN-SUFFIX,deskconnect.com,DIRECT
-    - DOMAIN-SUFFIX,disq.us,DIRECT
-    - DOMAIN-SUFFIX,disqus.com,DIRECT
-    - DOMAIN-SUFFIX,disquscdn.com,DIRECT
-    - DOMAIN-SUFFIX,dnsimple.com,DIRECT
-    - DOMAIN-SUFFIX,docker.com,DIRECT
-    - DOMAIN-SUFFIX,dribbble.com,DIRECT
-    - DOMAIN-SUFFIX,droplr.com,DIRECT
-    - DOMAIN-SUFFIX,duckduckgo.com,DIRECT
-    - DOMAIN-SUFFIX,dueapp.com,DIRECT
-    - DOMAIN-SUFFIX,dytt8.net,DIRECT
-    - DOMAIN-SUFFIX,edgecastcdn.net,DIRECT
-    - DOMAIN-SUFFIX,edgekey.net,DIRECT
-    - DOMAIN-SUFFIX,edgesuite.net,DIRECT
-    - DOMAIN-SUFFIX,engadget.com,DIRECT
-    - DOMAIN-SUFFIX,entrust.net,DIRECT
-    - DOMAIN-SUFFIX,eurekavpt.com,DIRECT
-    - DOMAIN-SUFFIX,evernote.com,DIRECT
-    - DOMAIN-SUFFIX,fabric.io,DIRECT
-    - DOMAIN-SUFFIX,fast.com,DIRECT
-    - DOMAIN-SUFFIX,fastly.net,DIRECT
-    - DOMAIN-SUFFIX,fc2.com,DIRECT
-    - DOMAIN-SUFFIX,feedburner.com,DIRECT
-    - DOMAIN-SUFFIX,feedly.com,DIRECT
-    - DOMAIN-SUFFIX,feedsportal.com,DIRECT
-    - DOMAIN-SUFFIX,fiftythree.com,DIRECT
-    - DOMAIN-SUFFIX,firebaseio.com,DIRECT
-    - DOMAIN-SUFFIX,flexibits.com,DIRECT
-    - DOMAIN-SUFFIX,flickr.com,DIRECT
-    - DOMAIN-SUFFIX,flipboard.com,DIRECT
-    - DOMAIN-SUFFIX,g.co,DIRECT
-    - DOMAIN-SUFFIX,gabia.net,DIRECT
-    - DOMAIN-SUFFIX,geni.us,DIRECT
-    - DOMAIN-SUFFIX,gfx.ms,DIRECT
-    - DOMAIN-SUFFIX,ggpht.com,DIRECT
-    - DOMAIN-SUFFIX,ghostnoteapp.com,DIRECT
-    - DOMAIN-SUFFIX,git.io,DIRECT
-    - DOMAIN-KEYWORD,github,DIRECT
-    - DOMAIN-SUFFIX,globalsign.com,DIRECT
-    - DOMAIN-SUFFIX,gmodules.com,DIRECT
-    - DOMAIN-SUFFIX,godaddy.com,DIRECT
-    - DOMAIN-SUFFIX,golang.org,DIRECT
-    - DOMAIN-SUFFIX,gongm.in,DIRECT
-    - DOMAIN-SUFFIX,goo.gl,DIRECT
-    - DOMAIN-SUFFIX,goodreaders.com,DIRECT
-    - DOMAIN-SUFFIX,goodreads.com,DIRECT
-    - DOMAIN-SUFFIX,gravatar.com,DIRECT
-    - DOMAIN-SUFFIX,gstatic.com,DIRECT
-    - DOMAIN-SUFFIX,gvt0.com,DIRECT
-    - DOMAIN-SUFFIX,hockeyapp.net,DIRECT
-    - DOMAIN-SUFFIX,hotmail.com,DIRECT
-    - DOMAIN-SUFFIX,icons8.com,DIRECT
-    - DOMAIN-SUFFIX,ifixit.com,DIRECT
-    - DOMAIN-SUFFIX,ift.tt,DIRECT
-    - DOMAIN-SUFFIX,ifttt.com,DIRECT
-    - DOMAIN-SUFFIX,iherb.com,DIRECT
-    - DOMAIN-SUFFIX,imageshack.us,DIRECT
-    - DOMAIN-SUFFIX,img.ly,DIRECT
-    - DOMAIN-SUFFIX,imgur.com,DIRECT
-    - DOMAIN-SUFFIX,imore.com,DIRECT
-    - DOMAIN-SUFFIX,instapaper.com,DIRECT
-    - DOMAIN-SUFFIX,ipn.li,DIRECT
-    - DOMAIN-SUFFIX,is.gd,DIRECT
-    - DOMAIN-SUFFIX,issuu.com,DIRECT
-    - DOMAIN-SUFFIX,itgonglun.com,DIRECT
-    - DOMAIN-SUFFIX,itun.es,DIRECT
-    - DOMAIN-SUFFIX,ixquick.com,DIRECT
-    - DOMAIN-SUFFIX,j.mp,DIRECT
-    - DOMAIN-SUFFIX,js.revsci.net,DIRECT
-    - DOMAIN-SUFFIX,jshint.com,DIRECT
-    - DOMAIN-SUFFIX,jtvnw.net,DIRECT
-    - DOMAIN-SUFFIX,justgetflux.com,DIRECT
-    - DOMAIN-SUFFIX,kat.cr,DIRECT
-    - DOMAIN-SUFFIX,klip.me,DIRECT
-    - DOMAIN-SUFFIX,libsyn.com,DIRECT
-    - DOMAIN-SUFFIX,linode.com,DIRECT
-    - DOMAIN-SUFFIX,lithium.com,DIRECT
-    - DOMAIN-SUFFIX,littlehj.com,DIRECT
-    - DOMAIN-SUFFIX,live.com,DIRECT
-    - DOMAIN-SUFFIX,live.net,DIRECT
-    - DOMAIN-SUFFIX,livefilestore.com,DIRECT
-    - DOMAIN-SUFFIX,llnwd.net,DIRECT
-    - DOMAIN-SUFFIX,macid.co,DIRECT
-    - DOMAIN-SUFFIX,macromedia.com,DIRECT
-    - DOMAIN-SUFFIX,macrumors.com,DIRECT
-    - DOMAIN-SUFFIX,mashable.com,DIRECT
-    - DOMAIN-SUFFIX,mathjax.org,DIRECT
-    - DOMAIN-SUFFIX,medium.com,DIRECT
-    - DOMAIN-SUFFIX,mega.co.nz,DIRECT
-    - DOMAIN-SUFFIX,mega.nz,DIRECT
-    - DOMAIN-SUFFIX,megaupload.com,DIRECT
-    - DOMAIN-SUFFIX,microsofttranslator.com,DIRECT
-    - DOMAIN-SUFFIX,mindnode.com,DIRECT
-    - DOMAIN-SUFFIX,mobile01.com,DIRECT
-    - DOMAIN-SUFFIX,modmyi.com,DIRECT
-    - DOMAIN-SUFFIX,msedge.net,DIRECT
-    - DOMAIN-SUFFIX,myfontastic.com,DIRECT
-    - DOMAIN-SUFFIX,name.com,DIRECT
-    - DOMAIN-SUFFIX,nextmedia.com,DIRECT
-    - DOMAIN-SUFFIX,nsstatic.net,DIRECT
-    - DOMAIN-SUFFIX,nssurge.com,DIRECT
-    - DOMAIN-SUFFIX,nyt.com,DIRECT
-    - DOMAIN-SUFFIX,nytimes.com,DIRECT
-    - DOMAIN-SUFFIX,omnigroup.com,DIRECT
-    - DOMAIN-SUFFIX,onedrive.com,DIRECT
-    - DOMAIN-SUFFIX,onenote.com,DIRECT
-    - DOMAIN-SUFFIX,ooyala.com,DIRECT
-    - DOMAIN-SUFFIX,openvpn.net,DIRECT
-    - DOMAIN-SUFFIX,openwrt.org,DIRECT
-    - DOMAIN-SUFFIX,orkut.com,DIRECT
-    - DOMAIN-SUFFIX,osxdaily.com,DIRECT
-    - DOMAIN-SUFFIX,outlook.com,DIRECT
-    - DOMAIN-SUFFIX,ow.ly,DIRECT
-    - DOMAIN-SUFFIX,paddleapi.com,DIRECT
-    - DOMAIN-SUFFIX,parallels.com,DIRECT
-    - DOMAIN-SUFFIX,parse.com,DIRECT
-    - DOMAIN-SUFFIX,pdfexpert.com,DIRECT
-    - DOMAIN-SUFFIX,periscope.tv,DIRECT
-    - DOMAIN-SUFFIX,pinboard.in,DIRECT
-    - DOMAIN-SUFFIX,pinterest.com,DIRECT
-    - DOMAIN-SUFFIX,pixelmator.com,DIRECT
-    - DOMAIN-SUFFIX,pixiv.net,DIRECT
-    - DOMAIN-SUFFIX,playpcesor.com,DIRECT
-    - DOMAIN-SUFFIX,playstation.com,DIRECT
-    - DOMAIN-SUFFIX,playstation.com.hk,DIRECT
-    - DOMAIN-SUFFIX,playstation.net,DIRECT
-    - DOMAIN-SUFFIX,playstationnetwork.com,DIRECT
-    - DOMAIN-SUFFIX,pushwoosh.com,DIRECT
-    - DOMAIN-SUFFIX,rime.im,DIRECT
-    - DOMAIN-SUFFIX,servebom.com,DIRECT
-    - DOMAIN-SUFFIX,sfx.ms,DIRECT
-    - DOMAIN-SUFFIX,shadowsocks.org,DIRECT
-    - DOMAIN-SUFFIX,sharethis.com,DIRECT
-    - DOMAIN-SUFFIX,shazam.com,DIRECT
-    - DOMAIN-SUFFIX,skype.com,DIRECT
-    - DOMAIN-SUFFIX,smartdnsDIRECT.com,DIRECT
-    - DOMAIN-SUFFIX,smartmailcloud.com,DIRECT
-    - DOMAIN-SUFFIX,sndcdn.com,DIRECT
-    - DOMAIN-SUFFIX,sony.com,DIRECT
-    - DOMAIN-SUFFIX,soundcloud.com,DIRECT
-    - DOMAIN-SUFFIX,sourceforge.net,DIRECT
-    - DOMAIN-SUFFIX,spotify.com,DIRECT
-    - DOMAIN-SUFFIX,squarespace.com,DIRECT
-    - DOMAIN-SUFFIX,sstatic.net,DIRECT
-    - DOMAIN-SUFFIX,st.luluku.pw,DIRECT
-    - DOMAIN-SUFFIX,stackoverflow.com,DIRECT
-    - DOMAIN-SUFFIX,startpage.com,DIRECT
-    - DOMAIN-SUFFIX,staticflickr.com,DIRECT
-    - DOMAIN-SUFFIX,steamcommunity.com,DIRECT
-    - DOMAIN-SUFFIX,symauth.com,DIRECT
-    - DOMAIN-SUFFIX,symcb.com,DIRECT
-    - DOMAIN-SUFFIX,symcd.com,DIRECT
-    - DOMAIN-SUFFIX,tapbots.com,DIRECT
-    - DOMAIN-SUFFIX,tapbots.net,DIRECT
-    - DOMAIN-SUFFIX,tdesktop.com,DIRECT
-    - DOMAIN-SUFFIX,techcrunch.com,DIRECT
-    - DOMAIN-SUFFIX,techsmith.com,DIRECT
-    - DOMAIN-SUFFIX,thepiratebay.org,DIRECT
-    - DOMAIN-SUFFIX,theverge.com,DIRECT
-    - DOMAIN-SUFFIX,time.com,DIRECT
-    - DOMAIN-SUFFIX,timeinc.net,DIRECT
-    - DOMAIN-SUFFIX,tiny.cc,DIRECT
-    - DOMAIN-SUFFIX,tinypic.com,DIRECT
-    - DOMAIN-SUFFIX,tmblr.co,DIRECT
-    - DOMAIN-SUFFIX,todoist.com,DIRECT
-    - DOMAIN-SUFFIX,trello.com,DIRECT
-    - DOMAIN-SUFFIX,trustasiassl.com,DIRECT
-    - DOMAIN-SUFFIX,tumblr.co,DIRECT
-    - DOMAIN-SUFFIX,tumblr.com,DIRECT
-    - DOMAIN-SUFFIX,tweetdeck.com,DIRECT
-    - DOMAIN-SUFFIX,tweetmarker.net,DIRECT
-    - DOMAIN-SUFFIX,twitch.tv,DIRECT
-    - DOMAIN-SUFFIX,txmblr.com,DIRECT
-    - DOMAIN-SUFFIX,typekit.net,DIRECT
-    - DOMAIN-SUFFIX,ubertags.com,DIRECT
-    - DOMAIN-SUFFIX,ublock.org,DIRECT
-    - DOMAIN-SUFFIX,ubnt.com,DIRECT
-    - DOMAIN-SUFFIX,ulyssesapp.com,DIRECT
-    - DOMAIN-SUFFIX,urchin.com,DIRECT
-    - DOMAIN-SUFFIX,usertrust.com,DIRECT
-    - DOMAIN-SUFFIX,v.gd,DIRECT
-    - DOMAIN-SUFFIX,v2ex.com,DIRECT
-    - DOMAIN-SUFFIX,vimeo.com,DIRECT
-    - DOMAIN-SUFFIX,vimeocdn.com,DIRECT
-    - DOMAIN-SUFFIX,vine.co,DIRECT
-    - DOMAIN-SUFFIX,vivaldi.com,DIRECT
-    - DOMAIN-SUFFIX,vox-cdn.com,DIRECT
-    - DOMAIN-SUFFIX,vsco.co,DIRECT
-    - DOMAIN-SUFFIX,vultr.com,DIRECT
-    - DOMAIN-SUFFIX,w.org,DIRECT
-    - DOMAIN-SUFFIX,w3schools.com,DIRECT
-    - DOMAIN-SUFFIX,webtype.com,DIRECT
-    - DOMAIN-SUFFIX,wikiwand.com,DIRECT
-    - DOMAIN-SUFFIX,wikileaks.org,DIRECT
-    - DOMAIN-SUFFIX,wikimedia.org,DIRECT
-    - DOMAIN-SUFFIX,wikipedia.com,DIRECT
-    - DOMAIN-SUFFIX,wikipedia.org,DIRECT
-    - DOMAIN-SUFFIX,windows.com,DIRECT
-    - DOMAIN-SUFFIX,windows.net,DIRECT
-    - DOMAIN-SUFFIX,wire.com,DIRECT
-    - DOMAIN-SUFFIX,wordpress.com,DIRECT
-    - DOMAIN-SUFFIX,workflowy.com,DIRECT
-    - DOMAIN-SUFFIX,wp.com,DIRECT
-    - DOMAIN-SUFFIX,wsj.com,DIRECT
-    - DOMAIN-SUFFIX,wsj.net,DIRECT
-    - DOMAIN-SUFFIX,xda-developers.com,DIRECT
-    - DOMAIN-SUFFIX,xeeno.com,DIRECT
-    - DOMAIN-SUFFIX,xiti.com,DIRECT
-    - DOMAIN-SUFFIX,yahoo.com,DIRECT
-    - DOMAIN-SUFFIX,yimg.com,DIRECT
-    - DOMAIN-SUFFIX,ying.com,DIRECT
-    - DOMAIN-SUFFIX,yoyo.org,DIRECT
-    - DOMAIN-SUFFIX,ytimg.com,DIRECT
-
-    # Telegram
-    - DOMAIN-SUFFIX,telegra.ph,DIRECT
-    - DOMAIN-SUFFIX,telegram.org,DIRECT
+    - DOMAIN,vd.l.qq.com,中国流媒体
+    - DOMAIN-SUFFIX,xvideos.com,兵工厂节点
 
     - IP-CIDR,91.108.4.0/22,DIRECT,no-resolve
     - IP-CIDR,91.108.8.0/22,DIRECT,no-resolve
@@ -811,7 +416,6 @@ rules:
     - IP-CIDR,149.154.164.0/22,DIRECT,no-resolve
     - IP-CIDR,149.154.168.0/22,DIRECT,no-resolve
     - IP-CIDR,149.154.172.0/22,DIRECT,no-resolve
-
 
     # LAN
     - DOMAIN-SUFFIX,local,DIRECT
@@ -826,6 +430,32 @@ rules:
     - IP-CIDR,224.0.0.0/8,DIRECT
     - IP-CIDR,255.255.255.255/32,DIRECT
 
+    # Unbreak
+    - RULE-SET,Unbreak,DIRECT
+    
+    # (DNS Cache Pollution) / (IP Blackhole) / (Region-Restricted Access Denied) / (Network Jitter)
+    - RULE-SET,Netflix,Netflix
+    
+#    - RULE-SET,YouTube,谷歌媒体
+    
+    # (Streaming Media)
+    - RULE-SET,国际流媒体,国外网站
+
+    # (StreamingSE)
+    - RULE-SET,中国流媒体,中国流媒体
+
+    # (DNS Cache Pollution) / (IP Blackhole) / (Region-Restricted Access Denied) / (Network Jitter)
+    - RULE-SET,国外网站,国外网站
+    
+    # (国内网站)
+    - RULE-SET,国内网站,中国网站
+
+    - RULE-SET,国内IP,中国网站
+
+    # Tencent
+    - IP-CIDR,119.28.28.28/32,中国流媒体
+    - IP-CIDR,182.254.116.0/24,中国流媒体
+
     # 最终规则
-    - GEOIP,CN,回国SS
+    - GEOIP,CN,中国网站
     - MATCH,DIRECT
